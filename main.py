@@ -8,9 +8,9 @@ intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix="%", intents=intents)
 transmission_rate = .87
-role_covid_name = 'Covided'
-role_dr_name = 'Dr Raoult le Fédérateur'
-role_5g_name = '5G'
+roles = {'covid': 'Covided',
+         'dr': 'Dr Raoult le Fédérateur',
+         '5g': '5G'}
 suffixes_peu_glorieux = [" le gilet jaune",
                          " le malade",
                          " l'inutile",
@@ -80,7 +80,7 @@ suffixes_peu_glorieux = [" le gilet jaune",
 @bot.command()
 @commands.has_role('Admin')
 async def setup(ctx):
-    for role in [role_covid_name, role_dr_name, role_5g_name]:
+    for role in roles.values():
         if discord.utils.get(ctx.guild.roles, name=role):
             print(f"Role {role} exists")
         else:
@@ -90,7 +90,7 @@ async def setup(ctx):
 
 async def show_symptoms(message):
     proba_symptom = 0.20
-    role_covid = discord.utils.find(lambda r: r.name == role_covid_name, message.guild.roles)
+    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], message.guild.roles)
     if role_covid in message.guild.get_member(message.author.id).roles \
             and random.random() <= proba_symptom:
         suffixe = random.choice(suffixes_peu_glorieux)
@@ -99,7 +99,7 @@ async def show_symptoms(message):
 
 
 def risk_infection(message):
-    role_covid = discord.utils.find(lambda r: r.name == role_covid_name, message.guild.roles)
+    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], message.guild.roles)
     return role_covid in message.guild.get_member(message.author.id).roles
 
 
@@ -111,7 +111,7 @@ async def on_ready() -> None:
 async def get_covid(message):
     if message.author.bot:
         return
-    role = discord.utils.get(message.author.guild.roles, name=role_covid_name)
+    role = discord.utils.get(message.author.guild.roles, name=roles['covid'])
     await message.author.add_roles(role)
     await show_symptoms(message)
     await message.channel.send(f"{message.author.name} est maintenant {role.name}")
@@ -139,14 +139,14 @@ async def on_command_error(ctx, error):
 
 # Si Installateur 5G, peut installer une antenne 5G près d'un membre qui a une chance de refiler le covid
 @bot.command(pass_context=True, aliases=['antenne5g', 'antenne5G', 'ondes5G', '5g', '5G'])
-@commands.has_role(role_5g_name)
+@commands.has_role(roles['5g'])
 @commands.cooldown(1, 60, commands.BucketType.guild)
 async def ondes5g(ctx, user_client: discord.Member):
     """
     Dose de 5G - Usage: %5G @member
     :return: null, a une chance d'infecter du Covid (parce que la 5G refile le coronavirus, c'est scientifique)
     """
-    role_covid = discord.utils.find(lambda r: r.name == role_covid_name, ctx.message.guild.roles)
+    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], ctx.message.guild.roles)
     proba_covid = 0.70
     if user_client.bot:
         return
@@ -174,14 +174,14 @@ async def help_mod_error(ctx, error):
 # Cependant, la cholorquine a X% de chances de tuer le patient (kick serveur)
 # Comme la chloroquine devient rare, Dr Raoult ne peut utiliser la choloroquine que 2 fois toutes les minutes
 @bot.command(pass_context=True, aliases=['chloroquine'])
-@commands.has_role(role_dr_name)
+@commands.has_role(roles['dr'])
 @commands.cooldown(2, 60, commands.BucketType.guild)
 async def heal(ctx, user_patient: discord.Member):
     """
     Dose de choloroquine - Usage: %chloroquine @member
     :return: null, a une chance de soigner du Covid ou de kick le membre
     """
-    role_covid = discord.utils.find(lambda r: r.name == role_covid_name, ctx.message.guild.roles)
+    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], ctx.message.guild.roles)
     proba_kick = 0.05
     # Idée historique patient, injections ratées augmentent risque de mort
     proba_guerison = 0.80
@@ -221,7 +221,7 @@ async def pcr(ctx, user: discord.Member):
     PCR test - Usage: %pcr @member
     :return: si le membre a le covid ou pas
     """
-    role = discord.utils.find(lambda r: r.name == role_covid_name, ctx.message.guild.roles)
+    role = discord.utils.find(lambda r: r.name == roles['covid'], ctx.message.guild.roles)
     if role in user.roles:
         await ctx.send("{} a le Covid".format(user))
     else:
