@@ -90,17 +90,16 @@ async def setup(ctx):
 
 async def show_symptoms(message):
     proba_symptom = 0.20
-    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], message.guild.roles)
-    if role_covid in message.guild.get_member(message.author.id).roles \
-            and random.random() <= proba_symptom:
+    role_covid = discord.utils.get(message.guild.roles, name=roles['covid'])
+    if role_covid in message.author.roles and random.random() <= proba_symptom:
         suffixe = random.choice(suffixes_peu_glorieux)
         await message.author.edit(nick=message.author.name + suffixe)
         print(f'Nickname changed: {message.author}')
 
 
 def risk_infection(message):
-    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], message.guild.roles)
-    return role_covid in message.guild.get_member(message.author.id).roles
+    role_covid = discord.utils.get(message.guild.roles, name=roles['covid'])
+    return role_covid in message.author.roles
 
 
 @bot.event
@@ -146,7 +145,7 @@ async def ondes5g(ctx, user_client: discord.Member):
     Dose de 5G - Usage: %5G @member
     :return: null, a une chance d'infecter du Covid (parce que la 5G refile le coronavirus, c'est scientifique)
     """
-    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], ctx.message.guild.roles)
+    role_covid = discord.utils.get(ctx.message.guild.roles, name=roles['covid'])
     proba_covid = 0.70
     if user_client.bot:
         return
@@ -181,7 +180,7 @@ async def heal(ctx, user_patient: discord.Member):
     Dose de choloroquine - Usage: %chloroquine @member
     :return: null, a une chance de soigner du Covid ou de kick le membre
     """
-    role_covid = discord.utils.find(lambda r: r.name == roles['covid'], ctx.message.guild.roles)
+    role_covid = discord.utils.get(ctx.message.guild.roles, name=roles['covid'])
     proba_kick = 0.05
     # Idée historique patient, injections ratées augmentent risque de mort
     proba_guerison = 0.80
@@ -221,7 +220,7 @@ async def pcr(ctx, user: discord.Member):
     PCR test - Usage: %pcr @member
     :return: si le membre a le covid ou pas
     """
-    role = discord.utils.find(lambda r: r.name == roles['covid'], ctx.message.guild.roles)
+    role = discord.utils.get(ctx.message.guild.roles, name=roles['covid'])
     if role in user.roles:
         await ctx.send("{} a le Covid".format(user))
     else:
